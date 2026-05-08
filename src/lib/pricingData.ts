@@ -42,7 +42,7 @@ export const TOOLS: Tool[] = [
     category: 'general',
     plans: [
       { name: 'Free', pricePerSeat: 0, bestFor: 'Light use' },
-      { name: 'Pro', pricePerSeat: 20, bestFor: 'Individual heavy users' },
+      { name: 'Pro', pricePerSeat: 17, bestFor: 'Individual heavy users' },
       { name: 'Max', pricePerSeat: 100, bestFor: 'Power users needing max output' },
       { name: 'Team', pricePerSeat: 30, minSeats: 5, bestFor: 'Teams needing collaboration' },
       { name: 'Enterprise', pricePerSeat: 0, bestFor: 'Custom pricing, large orgs' },
@@ -79,8 +79,8 @@ export const TOOLS: Tool[] = [
     name: 'Gemini',
     category: 'general',
     plans: [
-      { name: 'Pro', pricePerSeat: 20, bestFor: 'Individual users' },
-      { name: 'Ultra', pricePerSeat: 0, bestFor: 'Custom enterprise' },
+      { name: 'Gemini Advanced', pricePerSeat: 20, bestFor: 'Individual users' },
+      { name: 'Workspace Add-on', pricePerSeat: 0, bestFor: 'Custom; varies by Workspace tier' },
     ],
   },
   {
@@ -89,8 +89,18 @@ export const TOOLS: Tool[] = [
     category: 'coding',
     plans: [
       { name: 'Free', pricePerSeat: 0, bestFor: 'Light use' },
-      { name: 'Pro', pricePerSeat: 15, bestFor: 'Individual developers' },
-      { name: 'Team', pricePerSeat: 35, bestFor: 'Teams' },
+      { name: 'Pro', pricePerSeat: 20, bestFor: 'Individual developers' },
+      { name: 'Teams', pricePerSeat: 40, bestFor: 'Teams' },
+    ],
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity AI',
+    category: 'general',
+    plans: [
+      { name: 'Free', pricePerSeat: 0, bestFor: 'Light use' },
+      { name: 'Pro', pricePerSeat: 20, bestFor: 'Heavy research, file uploads' },
+      { name: 'Enterprise', pricePerSeat: 0, bestFor: 'Custom pricing, SSO' },
     ],
   },
 ]
