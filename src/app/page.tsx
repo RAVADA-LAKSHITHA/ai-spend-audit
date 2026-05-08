@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TOOLS } from '@/lib/pricingData'
-import { Trash2, Plus, Zap } from 'lucide-react'
+import { Trash2, Plus, Zap, TrendingDown } from 'lucide-react'
 
 type ToolEntry = {
   toolId: string
@@ -29,7 +29,6 @@ export default function Home() {
   ])
   const [isLoading, setIsLoading] = useState(false)
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -40,7 +39,6 @@ export default function Home() {
     }
   }, [])
 
-  // Save to localStorage on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ teamSize, useCase, entries }))
   }, [teamSize, useCase, entries])
@@ -56,13 +54,11 @@ export default function Home() {
   function updateEntry(index: number, field: keyof ToolEntry, value: string) {
     const updated = [...entries]
     updated[index] = { ...updated[index], [field]: value }
-    // Reset plan when tool changes
     if (field === 'toolId') updated[index].planName = ''
     setEntries(updated)
   }
 
   async function handleSubmit() {
-    // Basic validation
     if (!teamSize || entries.some((e) => !e.toolId || !e.monthlySpend)) {
       alert('Please fill in team size and monthly spend for each tool.')
       return
@@ -101,47 +97,63 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      {/* Hero */}
-      <div className="max-w-3xl mx-auto px-4 pt-16 pb-8 text-center">
-        <Badge className="mb-4 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+    <main className="min-h-screen bg-white text-slate-900">
+
+      {/* Nav */}
+      <nav className="border-b border-slate-100 px-6 py-4 flex items-center justify-between max-w-5xl mx-auto">
+        <div className="flex items-center gap-2">
+          <TrendingDown className="h-5 w-5 text-emerald-600" />
+          <span className="font-semibold text-slate-900 tracking-tight">SpendSmart AI</span>
+        </div>
+        <Badge variant="outline" className="text-emerald-700 border-emerald-200 bg-emerald-50 text-xs">
           Free · No login required
         </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-          Are you overspending on AI tools?
+      </nav>
+
+      {/* Hero */}
+      <div className="max-w-3xl mx-auto px-4 pt-14 pb-10 text-center">
+        <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 text-sm text-emerald-700 font-medium mb-6">
+          <TrendingDown className="h-4 w-4" />
+          The free AI spend audit tool for startups
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4 leading-tight">
+          Are you overspending<br />on AI tools?
         </h1>
-        <p className="text-slate-400 text-lg mb-2">
-          Enter what you pay. Get an instant audit — where you're overspending, what to cut, and how much you save.
+        <p className="text-slate-500 text-lg mb-2 max-w-xl mx-auto">
+          Enter what you pay. Get an instant audit — where you're overspending,
+          what to cut, and exactly how much you save.
         </p>
-        <p className="text-slate-500 text-sm">Takes 2 minutes. Trusted by 0 startups so far — be the first.</p>
+        <p className="text-slate-400 text-sm">Takes 2 minutes. No account needed. See results instantly.</p>
       </div>
 
-      {/* Form */}
-      <div className="max-w-3xl mx-auto px-4 pb-16">
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-xl">Your AI Tool Stack</CardTitle>
+      {/* Form card */}
+      <div className="max-w-3xl mx-auto px-4 pb-20">
+        <Card className="border border-slate-200 shadow-sm rounded-2xl">
+          <CardHeader className="pb-2 pt-6 px-6">
+            <CardTitle className="text-slate-900 text-lg font-semibold">Your AI Tool Stack</CardTitle>
+            <p className="text-slate-400 text-sm">Add every AI tool you pay for — even API costs.</p>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="px-6 pb-6 space-y-6">
+
             {/* Team info */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-slate-300">Team size (people)</Label>
+              <div className="space-y-1.5">
+                <Label className="text-slate-700 text-sm font-medium">Team size</Label>
                 <Input
                   type="number"
                   min="1"
                   placeholder="e.g. 5"
                   value={teamSize}
                   onChange={(e) => setTeamSize(e.target.value)}
-                  className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
+                  className="border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-slate-300">Primary use case</Label>
+              <div className="space-y-1.5">
+                <Label className="text-slate-700 text-sm font-medium">Primary use case</Label>
                 <select
                   value={useCase}
                   onChange={(e) => setUseCase(e.target.value)}
-                  className="w-full h-10 rounded-md border border-slate-600 bg-slate-900 text-white px-3 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   {USE_CASES.map((uc) => (
                     <option key={uc} value={uc}>
@@ -152,19 +164,29 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Column headers */}
+            <div className="grid grid-cols-12 gap-2 px-1">
+              <div className="col-span-4 text-xs font-medium text-slate-400 uppercase tracking-wide">Tool</div>
+              <div className="col-span-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Plan</div>
+              <div className="col-span-2 text-xs font-medium text-slate-400 uppercase tracking-wide">$/mo</div>
+              <div className="col-span-2 text-xs font-medium text-slate-400 uppercase tracking-wide">Seats</div>
+              <div className="col-span-1" />
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-slate-100 -mt-2" />
+
             {/* Tool entries */}
-            <div className="space-y-4">
-              <Label className="text-slate-300">AI tools you pay for</Label>
+            <div className="space-y-3">
               {entries.map((entry, index) => {
                 const tool = TOOLS.find((t) => t.id === entry.toolId)
                 return (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                    {/* Tool selector */}
+                  <div key={index} className="grid grid-cols-12 gap-2 items-center">
                     <div className="col-span-4">
                       <select
                         value={entry.toolId}
                         onChange={(e) => updateEntry(index, 'toolId', e.target.value)}
-                        className="w-full h-10 rounded-md border border-slate-600 bg-slate-900 text-white px-3 text-sm"
+                        className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         {TOOLS.map((t) => (
                           <option key={t.id} value={t.id}>{t.name}</option>
@@ -172,12 +194,11 @@ export default function Home() {
                       </select>
                     </div>
 
-                    {/* Plan selector */}
                     <div className="col-span-3">
                       <select
                         value={entry.planName}
                         onChange={(e) => updateEntry(index, 'planName', e.target.value)}
-                        className="w-full h-10 rounded-md border border-slate-600 bg-slate-900 text-white px-3 text-sm"
+                        className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="">Plan</option>
                         {tool?.plans.map((p) => (
@@ -186,74 +207,74 @@ export default function Home() {
                       </select>
                     </div>
 
-                    {/* Monthly spend */}
                     <div className="col-span-2">
                       <Input
                         type="number"
                         min="0"
-                        placeholder="$/mo"
+                        placeholder="0"
                         value={entry.monthlySpend}
                         onChange={(e) => updateEntry(index, 'monthlySpend', e.target.value)}
-                        className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
+                        className="border-slate-200 text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
 
-                    {/* Seats */}
                     <div className="col-span-2">
                       <Input
                         type="number"
                         min="1"
-                        placeholder="Seats"
+                        placeholder="1"
                         value={entry.seats}
                         onChange={(e) => updateEntry(index, 'seats', e.target.value)}
-                        className="bg-slate-900 border-slate-600 text-white placeholder:text-slate-500"
+                        className="border-slate-200 text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
 
-                    {/* Remove */}
-                    <div className="col-span-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
+                    <div className="col-span-1 flex justify-center">
+                      <button
                         onClick={() => removeTool(index)}
                         disabled={entries.length === 1}
-                        className="text-slate-500 hover:text-red-400"
+                        className="text-slate-300 hover:text-red-400 disabled:opacity-0 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 )
               })}
 
-              <Button
-                variant="outline"
+              <button
                 onClick={addTool}
-                className="w-full border-dashed border-slate-600 text-slate-400 hover:text-white hover:border-slate-400 bg-transparent"
+                className="w-full h-10 rounded-md border border-dashed border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-300 text-sm flex items-center justify-center gap-2 transition-colors"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4" />
                 Add another tool
-              </Button>
+              </button>
             </div>
+
+            {/* Divider */}
+            <div className="h-px bg-slate-100" />
 
             {/* Submit */}
             <Button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+              className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
             >
               {isLoading ? (
-                'Running audit...'
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Running your audit...
+                </span>
               ) : (
-                <>
-                  <Zap className="h-5 w-5 mr-2" />
+                <span className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
                   Run my free audit
-                </>
+                </span>
               )}
             </Button>
 
-            <p className="text-center text-xs text-slate-500">
-              No account needed. Your data is not sold. Email only asked after you see results.
+            <p className="text-center text-xs text-slate-400">
+              No account needed · Data not sold · Email only asked after you see results
             </p>
           </CardContent>
         </Card>
