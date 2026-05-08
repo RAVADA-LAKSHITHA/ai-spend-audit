@@ -47,6 +47,29 @@ export function runAudit(inputs: ToolInput[], teamSize: number, useCase: string)
     const currentPlan = tool.plans.find((p) => p.name === input.planName)
     const impliedPricePerSeat = input.seats > 0 ? input.monthlySpend / input.seats : input.monthlySpend
 
+    // Check: Perplexity + Claude/ChatGPT overlap — research use case only
+    if (input.toolId === 'perplexity' && input.planName === 'Pro') {
+      const hasOtherGeneral = inputs.some(
+        (i) => (i.toolId === 'claude' || i.toolId === 'chatgpt') && i.monthlySpend > 0
+      )
+
+      if (hasOtherGeneral && useCase !== 'research') {
+        const savings = input.monthlySpend
+
+        return {
+          toolId: input.toolId,
+          toolName: tool.name,
+          currentPlan: input.planName,
+          currentMonthlySpend: input.monthlySpend,
+          recommendation: `You're paying for Perplexity Pro AND Claude/ChatGPT. For ${useCase} work, one general AI tool is enough. Perplexity's strength is real-time research — if that's not your primary use, cancel it.`,
+          recommendedAction: 'Cancel Perplexity Pro — covered by existing tools',
+          monthlySavings: savings,
+          annualSavings: savings * 12,
+          isOptimal: false,
+        }
+      }
+    }
+    
     // Check: Are they on a team plan for very few users?
     if (input.planName.toLowerCase().includes('team') || input.planName.toLowerCase().includes('business') || input.planName.toLowerCase().includes('enterprise')) {
       if (input.seats <= 2) {
