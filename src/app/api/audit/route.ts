@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const inputs: ToolInput[] = tools
     const auditResult = runAudit(inputs, teamSize, useCase)
 
-    // Store audit in Supabase
+    // Store full audit results in Supabase
     const { data, error } = await supabase
       .from('audits')
       .insert({
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
         use_case: useCase,
         total_monthly_savings: auditResult.totalMonthlySavings,
         total_annual_savings: auditResult.totalAnnualSavings,
+        results: auditResult.results,
         is_public: true,
       })
       .select('id')
