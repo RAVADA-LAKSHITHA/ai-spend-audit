@@ -49,3 +49,29 @@
 - Build audit results page (/audit/[id]) with per-tool breakdown and savings hero
 - Integrate Anthropic API for personalized summary
 - Add shareable URL with Open Graph tags
+
+## Day 3 — 2026-05-09
+
+**Hours worked:** 6
+
+**What I did:**
+- Built the audit results page (/audit/[id]) with savings hero, per-tool breakdown, AI summary
+- Created /api/summary route using OpenRouter (Claude Haiku) for personalized summary
+- Added graceful fallback for when AI API fails — results page never breaks
+- Added Open Graph + Twitter card meta tags for shareable URLs
+- Added Credex CTA for audits showing >$500/mo savings
+- Wrote PROMPTS.md documenting the prompt, reasoning, and what didn't work
+
+**What I learned:**
+- Next.js generateMetadata runs server-side so it can fetch from Supabase directly
+- Separating server component (page.tsx) from client component (AuditResultsClient.tsx) is the right pattern — metadata needs server, interactivity needs client
+
+**Blockers / what I'm stuck on:**
+- Need to set up Resend for email capture tomorrow
+- Lead capture form not built yet
+
+**Plan for tomorrow:**
+- Build email capture modal on results page
+- Set up Resend transactional email
+- Deploy to Vercel
+- Set up GitHub Actions CI
