@@ -21,7 +21,7 @@ type AuditResult = {
 
 type Audit = {
   id: string
-  tools: any[]
+  tools: { toolId: string; planName: string; monthlySpend: number; seats: number }[]
   team_size: number
   use_case: string
   total_monthly_savings: number
