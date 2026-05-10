@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,16 +31,46 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
-      const parsed = JSON.parse(saved)
-      setTeamSize(parsed.teamSize || '')
-      setUseCase(parsed.useCase || 'mixed')
-      setEntries(parsed.entries || [{ toolId: 'cursor', planName: '', monthlySpend: '', seats: '1' }])
+      try {
+        const parsed = JSON.parse(saved)
+        setTeamSize(parsed.teamSize || '')
+        setUseCase(parsed.useCase || 'mixed')
+        setEntries(parsed.entries || [{ toolId: 'cursor', planName: '', monthlySpend: '', seats: '1' }])
+      } catch {}
     }
   }, [])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ teamSize, useCase, entries }))
   }, [teamSize, useCase, entries])
+
+  function updateEntry(index: number, field: keyof ToolEntry, value: string) {
+    const updated = [...entries]
+    updated[index] = { ...updated[index], [field]: value }
+
+    if (field === 'toolId') {
+      updated[index].planName = ''
+      updated[index].monthlySpend = ''
+      updated[index].seats = '1'
+    }
+
+    if (field === 'planName' || field === 'seats') {
+      const tool = TOOLS.find((t) => t.id === updated[index].toolId)
+      const planName = field === 'planName' ? value : updated[index].planName
+      const plan = tool?.plans.find((p) => p.name === planName)
+      const rawSeats = parseInt(field === 'seats' ? value : updated[index].seats) || 1
+      if (plan && plan.pricePerSeat > 0) {
+        const minSeats = plan.minSeats ?? 1
+        const effectiveSeats = Math.max(rawSeats, minSeats)
+        updated[index].monthlySpend = (plan.pricePerSeat * effectiveSeats).toString()
+        updated[index].seats = effectiveSeats.toString()
+      } else if (plan && plan.pricePerSeat === 0) {
+        updated[index].monthlySpend = '0'
+      }
+    }
+
+    setEntries(updated)
+  }
 
   function addTool() {
     setEntries([...entries, { toolId: 'claude', planName: '', monthlySpend: '', seats: '1' }])
@@ -51,16 +80,13 @@ export default function Home() {
     setEntries(entries.filter((_, i) => i !== index))
   }
 
-  function updateEntry(index: number, field: keyof ToolEntry, value: string) {
-    const updated = [...entries]
-    updated[index] = { ...updated[index], [field]: value }
-    if (field === 'toolId') updated[index].planName = ''
-    setEntries(updated)
-  }
-
   async function handleSubmit() {
-    if (!teamSize || entries.some((e) => !e.toolId || !e.monthlySpend)) {
-      alert('Please fill in team size and monthly spend for each tool.')
+    if (!teamSize) {
+      alert('Please fill in your team size at the top.')
+      return
+    }
+    if (entries.some((e) => !e.planName)) {
+      alert('Please select a plan for each tool.')
       return
     }
 
@@ -89,7 +115,7 @@ export default function Home() {
       } else {
         alert('Something went wrong. Please try again.')
       }
-    } catch (err) {
+    } catch {
       alert('Network error. Please try again.')
     } finally {
       setIsLoading(false)
@@ -120,32 +146,31 @@ export default function Home() {
           Are you overspending<br />on AI tools?
         </h1>
         <p className="text-slate-500 text-lg mb-2 max-w-xl mx-auto">
-          Enter what you pay. Get an instant audit — where you're overspending,
-          what to cut, and exactly how much you save.
+          Enter your team size and AI tools. Get an instant audit — right plan, right seats, exact savings.
         </p>
         <p className="text-slate-400 text-sm">Takes 2 minutes. No account needed. See results instantly.</p>
       </div>
 
-      {/* Form card */}
+      {/* Form */}
       <div className="max-w-3xl mx-auto px-4 pb-20">
         <Card className="border border-slate-200 shadow-sm rounded-2xl">
           <CardHeader className="pb-2 pt-6 px-6">
             <CardTitle className="text-slate-900 text-lg font-semibold">Your AI Tool Stack</CardTitle>
-            <p className="text-slate-400 text-sm">Add every AI tool you pay for — even API costs.</p>
+            <p className="text-slate-400 text-sm">Select your tools and plans — cost calculates automatically based on seats.</p>
           </CardHeader>
           <CardContent className="px-6 pb-6 space-y-6">
 
             {/* Team info */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-slate-700 text-sm font-medium">Team size</Label>
-                <Input
+                <Label className="text-slate-700 text-sm font-medium">Team size (total people)</Label>
+                <input
                   type="number"
                   min="1"
-                  placeholder="e.g. 5"
+                  placeholder="e.g. 10"
                   value={teamSize}
                   onChange={(e) => setTeamSize(e.target.value)}
-                  className="border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div className="space-y-1.5">
@@ -168,12 +193,11 @@ export default function Home() {
             <div className="grid grid-cols-12 gap-2 px-1">
               <div className="col-span-4 text-xs font-medium text-slate-400 uppercase tracking-wide">Tool</div>
               <div className="col-span-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Plan</div>
-              <div className="col-span-2 text-xs font-medium text-slate-400 uppercase tracking-wide">$/mo</div>
               <div className="col-span-2 text-xs font-medium text-slate-400 uppercase tracking-wide">Seats</div>
+              <div className="col-span-2 text-xs font-medium text-slate-400 uppercase tracking-wide">$/mo</div>
               <div className="col-span-1" />
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-slate-100 -mt-2" />
 
             {/* Tool entries */}
@@ -182,6 +206,8 @@ export default function Home() {
                 const tool = TOOLS.find((t) => t.id === entry.toolId)
                 return (
                   <div key={index} className="grid grid-cols-12 gap-2 items-center">
+
+                    {/* Tool */}
                     <div className="col-span-4">
                       <select
                         value={entry.toolId}
@@ -194,6 +220,7 @@ export default function Home() {
                       </select>
                     </div>
 
+                    {/* Plan */}
                     <div className="col-span-3">
                       <select
                         value={entry.planName}
@@ -207,28 +234,26 @@ export default function Home() {
                       </select>
                     </div>
 
+                    {/* Seats */}
                     <div className="col-span-2">
-                      <Input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={entry.monthlySpend}
-                        onChange={(e) => updateEntry(index, 'monthlySpend', e.target.value)}
-                        className="border-slate-200 text-slate-900 placeholder:text-slate-400"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <Input
+                      <input
                         type="number"
                         min="1"
                         placeholder="1"
                         value={entry.seats}
                         onChange={(e) => updateEntry(index, 'seats', e.target.value)}
-                        className="border-slate-200 text-slate-900 placeholder:text-slate-400"
+                        className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
 
+                    {/* Cost — read only */}
+                    <div className="col-span-2">
+                      <div className="h-10 rounded-md border border-slate-100 bg-slate-50 px-3 flex items-center text-sm text-slate-700 font-medium">
+                        {entry.monthlySpend ? `$${entry.monthlySpend}` : '—'}
+                      </div>
+                    </div>
+
+                    {/* Remove */}
                     <div className="col-span-1 flex justify-center">
                       <button
                         onClick={() => removeTool(index)}
@@ -251,7 +276,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-slate-100" />
 
             {/* Submit */}
