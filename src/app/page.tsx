@@ -19,27 +19,28 @@ type ToolEntry = {
 const USE_CASES = ['coding', 'writing', 'data', 'research', 'mixed']
 const STORAGE_KEY = 'ai-spend-audit-form'
 
+const DEFAULT_ENTRY: ToolEntry = { toolId: 'cursor', planName: '', monthlySpend: '', seats: '1' }
+
+function loadFromStorage<T>(key: string, field: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const saved = localStorage.getItem(key)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (parsed[field] !== undefined && parsed[field] !== null) return parsed[field] as T
+    }
+  } catch {}
+  return fallback
+}
+
 export default function Home() {
   const router = useRouter()
-  const [teamSize, setTeamSize] = useState('')
-  const [useCase, setUseCase] = useState('mixed')
-  const [entries, setEntries] = useState<ToolEntry[]>([
-    { toolId: 'cursor', planName: '', monthlySpend: '', seats: '1' },
-  ])
+  const [teamSize, setTeamSize] = useState<string>(() => loadFromStorage(STORAGE_KEY, 'teamSize', ''))
+  const [useCase, setUseCase] = useState<string>(() => loadFromStorage(STORAGE_KEY, 'useCase', 'mixed'))
+  const [entries, setEntries] = useState<ToolEntry[]>(() => loadFromStorage(STORAGE_KEY, 'entries', [DEFAULT_ENTRY]))
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setTeamSize(parsed.teamSize || '')
-        setUseCase(parsed.useCase || 'mixed')
-        setEntries(parsed.entries || [{ toolId: 'cursor', planName: '', monthlySpend: '', seats: '1' }])
-      } catch {}
-    }
-  }, [])
-
+  // Save to localStorage on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ teamSize, useCase, entries }))
   }, [teamSize, useCase, entries])
@@ -59,6 +60,7 @@ export default function Home() {
       const planName = field === 'planName' ? value : updated[index].planName
       const plan = tool?.plans.find((p) => p.name === planName)
       const rawSeats = parseInt(field === 'seats' ? value : updated[index].seats) || 1
+
       if (plan && plan.pricePerSeat > 0) {
         const minSeats = plan.minSeats ?? 1
         const effectiveSeats = Math.max(rawSeats, minSeats)
@@ -246,7 +248,7 @@ export default function Home() {
                       />
                     </div>
 
-                    {/* Cost — read only */}
+                    {/* Cost — read only, auto-calculated */}
                     <div className="col-span-2">
                       <div className="h-10 rounded-md border border-slate-100 bg-slate-50 px-3 flex items-center text-sm text-slate-700 font-medium">
                         {entry.monthlySpend ? `$${entry.monthlySpend}` : '—'}
