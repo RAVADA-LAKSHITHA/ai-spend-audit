@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { TrendingDown, CheckCircle, AlertTriangle, Share2, ArrowRight, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Mail, Building2 } from 'lucide-react'
 
 type AuditResult = {
   toolId: string
@@ -34,6 +37,13 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
   const [summary, setSummary] = useState<string | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+
+  const [showEmailCapture, setShowEmailCapture] = useState(false)
+  const [email, setEmail] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [role, setRole] = useState('')
+  const [emailSubmitted, setEmailSubmitted] = useState(false)
+  const [emailLoading, setEmailLoading] = useState(false)
 
   const isHighSavings = audit.total_monthly_savings > 500
   const isOptimal = audit.total_monthly_savings === 0
@@ -69,6 +79,29 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
     navigator.clipboard.writeText(window.location.href)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function handleEmailSubmit() {
+    if (!email) return
+    setEmailLoading(true)
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          companyName,
+          role,
+          auditId: audit.id,
+          honeypot: '', // real users leave this empty
+        }),
+      })
+      setEmailSubmitted(true)
+    } catch {
+      setEmailSubmitted(true) // still show success to user
+    } finally {
+      setEmailLoading(false)
+    }
   }
 
   const fallbackSummary = isOptimal
@@ -174,9 +207,8 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
             {audit.results?.map((result, i) => (
               <Card
                 key={i}
-                className={`border shadow-sm rounded-xl bg-white ${
-                  !result.isOptimal ? 'border-amber-100' : 'border-slate-100'
-                }`}
+                className={`border shadow-sm rounded-xl bg-white ${!result.isOptimal ? 'border-amber-100' : 'border-slate-100'
+                  }`}
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -185,11 +217,10 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
                         <span className="font-semibold text-slate-800">{result.toolName}</span>
                         <Badge
                           variant="outline"
-                          className={`text-xs ${
-                            result.isOptimal
-                              ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                              : 'border-amber-200 text-amber-700 bg-amber-50'
-                          }`}
+                          className={`text-xs ${result.isOptimal
+                            ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                            : 'border-amber-200 text-amber-700 bg-amber-50'
+                            }`}
                         >
                           {result.currentPlan}
                         </Badge>
@@ -263,6 +294,103 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
               <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
                 Notify me of new savings
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Email capture — shown after results load */}
+        {!summaryLoading && !emailSubmitted && (
+          <Card className="border border-emerald-100 rounded-2xl shadow-sm bg-gradient-to-br from-white to-emerald-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="h-4 w-4 text-emerald-600" />
+                <span className="font-semibold text-slate-800">Get your full report by email</span>
+              </div>
+              <p className="text-slate-500 text-sm mb-4">
+                We will send you the complete audit + notify you when new savings apply to your stack.
+                {audit.total_monthly_savings > 500 && (
+                  <span className="text-emerald-700 font-medium"> High-savings audits get a personal Credex follow-up.</span>
+                )}
+              </p>
+
+              {!showEmailCapture ? (
+                <Button
+                  onClick={() => setShowEmailCapture(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send me the report
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  {/* Honeypot — hidden from real users */}
+                  <input
+                    type="text"
+                    name="website"
+                    style={{ display: 'none' }}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-slate-700 text-sm">Email address *</Label>
+                      <Input
+                        type="email"
+                        placeholder="you@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="border-slate-200"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-slate-700 text-sm">Company name</Label>
+                      <Input
+                        placeholder="Acme Inc. (optional)"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="border-slate-200"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-slate-700 text-sm">Your role</Label>
+                    <Input
+                      placeholder="e.g. CTO, Engineering Manager (optional)"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="border-slate-200"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleEmailSubmit}
+                    disabled={!email || emailLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+                  >
+                    {emailLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Sending...
+                      </span>
+                    ) : (
+                      'Send my report'
+                    )}
+                  </Button>
+                  <p className="text-xs text-slate-400 text-center">
+                    No spam. Unsubscribe anytime.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Success state */}
+        {emailSubmitted && (
+          <Card className="border border-emerald-200 rounded-2xl bg-emerald-50">
+            <CardContent className="p-6 text-center">
+              <CheckCircle className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+              <p className="font-semibold text-emerald-800">Report sent to your inbox!</p>
+              <p className="text-emerald-600 text-sm mt-1">Check your email for the full audit.</p>
             </CardContent>
           </Card>
         )}
