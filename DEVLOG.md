@@ -75,3 +75,35 @@
 - Set up Resend transactional email
 - Deploy to Vercel
 - Set up GitHub Actions CI
+
+
+## Day 4 — 2026-05-10
+
+**Hours worked:** 8
+
+**What I did:**
+- Set up Resend account and built /api/leads route with transactional email confirmation
+- Added email capture card to results page — shown after value is delivered, never before
+- Implemented honeypot field + in-memory rate limiting for abuse protection
+- Deployed to Vercel — live URL confirmed working end-to-end
+- Set up GitHub Actions CI workflow (.github/workflows/ci.yml)
+- Fixed major audit engine issues — added team size analysis, seat coverage detection, auto-calculated costs (read-only), plan upgrade suggestions based on team size
+- Made monthly spend field read-only — cost now auto-calculates from plan × seats, preventing invalid inputs like $0
+- Fixed all ESLint errors — replaced any types, fixed setState in useEffect, removed unused imports
+- Fixed CI npm install sync error by switching from npm ci to npm install in workflow
+- Confirmed CI green on latest commit ✅
+
+**What I learned:**
+- npm ci requires perfect lockfile sync — npm install is safer for projects with multiple developers or environments
+- Making the cost field read-only is both better UX and prevents garbage data entering the audit engine
+- useState lazy initializers (() => ...) are the right pattern for reading localStorage without triggering hydration issues
+- GitHub Actions fails fast — even one step failure skips all remaining steps
+
+**Blockers / what I'm stuck on:**
+- Need to write all entrepreneurial files tomorrow (GTM, ECONOMICS, USER_INTERVIEWS, LANDING_COPY, METRICS) — these are worth 25 points
+- Need to complete 3rd user interview
+
+**Plan for tomorrow:**
+- Write GTM.md, ECONOMICS.md, LANDING_COPY.md, METRICS.md, USER_INTERVIEWS.md
+- Complete REFLECTION.md and TESTS.md and README.md
+- Run Lighthouse on deployed URL and fix any scores below threshold
