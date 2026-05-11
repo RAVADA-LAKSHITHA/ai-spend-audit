@@ -90,10 +90,12 @@ export default function Home() {
 
     if (entries.some((e) => {
       const tool = TOOLS.find(t => t.id === e.toolId)
-      if (tool?.category === 'api') return false // API tools can have any spend
-      return !e.planName
+      if (tool?.category === 'api' && (!e.monthlySpend || parseFloat(e.monthlySpend) === 0)) {
+        return true // flag API tools with $0
+      }
+      return !e.planName && tool?.category !== 'api'
     })) {
-      alert('Please select a plan for each tool.')
+      alert('Please enter your actual monthly spend for API tools — they cannot be $0.')
       return
     }
 

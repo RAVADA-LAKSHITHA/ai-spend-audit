@@ -61,6 +61,18 @@ export function runAudit(inputs: ToolInput[], teamSize: number, useCase: string)
     const effectiveSeats = Math.max(input.seats, minSeats)
     const expectedCost = planPrice * effectiveSeats
 
+    // ── RULE 0: API tools with $0 spend — invalid input ──
+    if (tool.category === 'api' && input.monthlySpend === 0) {
+      return makeResult(
+        input,
+        tool.name,
+        `You selected ${tool.name} but entered $0/mo. Pay-as-you-go APIs always have some cost — enter your actual monthly bill from your dashboard.`,
+        'Check your API billing dashboard and enter actual spend',
+        0,
+        false
+      )
+    }
+
     // ── RULE 1: Seats below plan minimum ──
     if (input.seats < minSeats && planPrice > 0) {
       const correctCost = planPrice * minSeats
