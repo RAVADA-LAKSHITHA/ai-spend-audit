@@ -87,12 +87,18 @@ export default function Home() {
       alert('Please enter a valid team size of at least 1.')
       return
     }
-    if (entries.some((e) => !e.planName)) {
+
+    if (entries.some((e) => {
+      const tool = TOOLS.find(t => t.id === e.toolId)
+      if (tool?.category === 'api') return false // API tools can have any spend
+      return !e.planName
+    })) {
       alert('Please select a plan for each tool.')
       return
     }
 
     setIsLoading(true)
+
     try {
       const payload = {
         teamSize: parseInt(teamSize),
@@ -248,11 +254,22 @@ export default function Home() {
                       />
                     </div>
 
-                    {/* Cost — read only, auto-calculated */}
+                    {/* Cost — read only for seat-based, editable for API tools */}
                     <div className="col-span-2">
-                      <div className="h-10 rounded-md border border-slate-100 bg-slate-50 px-3 flex items-center text-sm text-slate-700 font-medium">
-                        {entry.monthlySpend ? `$${entry.monthlySpend}` : '—'}
-                      </div>
+                      {tool?.category === 'api' ? (
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="$/mo"
+                          value={entry.monthlySpend}
+                          onChange={(e) => updateEntry(index, 'monthlySpend', e.target.value)}
+                          className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                      ) : (
+                        <div className="h-10 rounded-md border border-slate-100 bg-slate-50 px-3 flex items-center text-sm text-slate-700 font-medium">
+                          {entry.monthlySpend ? `$${entry.monthlySpend}` : '—'}
+                        </div>
+                      )}
                     </div>
 
                     {/* Remove */}
