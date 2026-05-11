@@ -107,3 +107,35 @@
 - Write GTM.md, ECONOMICS.md, LANDING_COPY.md, METRICS.md, USER_INTERVIEWS.md
 - Complete REFLECTION.md and TESTS.md and README.md
 - Run Lighthouse on deployed URL and fix any scores below threshold
+
+
+## Day 5 — 2026-05-11
+
+**Hours worked:** 5
+
+**What I did:**
+- Fixed API tool $0 validation — audit engine now flags Pay-as-you-go tools entered as $0 as invalid input, and form blocks submission with a clear message
+- Updated handleSubmit validation to distinguish between API tools (need manual spend entry) and seat-based tools (need plan selection)
+- Wrote README.md — project overview, tech stack decisions, audit engine rules, local setup, database schema
+- Wrote TESTS.md — documented all 9 unit tests with inputs/expected outputs, manual test scenarios on live URL, what is not tested and why
+- Committed all entrepreneurial files (GTM, ECONOMICS, USER_INTERVIEWS, LANDING_COPY, METRICS, REFLECTION) from Day 5 work
+- Verified 5 distinct commit days in git history: May 7, 8, 9, 10, 11 ✅
+- Final submission checklist complete
+
+**What I learned:**
+- Separating API tools (pay-as-you-go) from seat-based tools in validation logic is important — the same "no plan selected" check doesn't apply to both
+- Writing TESTS.md made me realize how much manual testing I had been doing without documenting it — the Resend dashboard, the Supabase table, the localStorage — all of it counts as testing
+- README.md is harder to write than code because you have to explain your decisions, not just what the code does
+
+**What I would do with more time:**
+- Add real-time API spend monitoring — the biggest insight from user interviews was Sai Deepak's $400 runaway API loop. The next version of this tool should detect abnormal API activity and alert before costs spiral, not just audit what happened last month
+- Add usage-based analysis — right now we audit what you're paying for. The better question is what you're actually using. A tool that shows "you have 20 Cursor seats and only 8 people logged in this week" is 10x more useful
+- Verify a custom domain on Resend so emails come from a branded address instead of onboarding@resend.dev
+
+**Final state:**
+- Live URL: https://ai-spend-audit-eta.vercel.app/
+- GitHub: https://github.com/RAVADA-LAKSHITHA/ai-spend-audit
+- CI: ✅ Green
+- Commit days: ✅ 5 distinct days
+- All required files: ✅ Present at repo root
+- User interviews: ✅ 3 completed (Sai Deepak, Harsith Veera Charan, Omkar Palika)
