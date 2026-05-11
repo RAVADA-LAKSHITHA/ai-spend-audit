@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { TrendingDown, CheckCircle, AlertTriangle, Share2, ArrowRight, Sparkles } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { TrendingDown, CheckCircle, AlertTriangle, Share2, ArrowRight, Sparkles, Mail } from 'lucide-react'
 import Link from 'next/link'
 
 type AuditResult = {
@@ -34,7 +36,7 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
   const [summary, setSummary] = useState<string | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [copied, setCopied] = useState(false)
-  const [showEmailCapture, setShowEmailCapture] = useState(false)  // ADD THIS
+  const [showEmailCapture, setShowEmailCapture] = useState(false)
   const [email, setEmail] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [role, setRole] = useState('')
@@ -46,6 +48,7 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
   const topRecommendation =
     audit.results?.find((r) => !r.isOptimal)?.recommendedAction ?? 'Review your current plans'
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     async function fetchSummary() {
       try {
@@ -77,28 +80,38 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  async function handleEmailSubmit() {
+    if (!email) return
+    setEmailLoading(true)
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, companyName, role, auditId: audit.id, honeypot: '' }),
+      })
+      setEmailSubmitted(true)
+    } catch {
+      setEmailSubmitted(true)
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
   const fallbackSummary = isOptimal
     ? `Your AI tool stack looks well-optimized for a ${audit.team_size}-person team focused on ${audit.use_case}. You are on the right plans and spending efficiently. Keep reviewing quarterly as new tools and pricing changes emerge.`
-    : `Your audit identified $${audit.total_monthly_savings.toFixed(0)}/month ($${audit.total_annual_savings.toFixed(0)}/year) in potential savings across your AI tools. The biggest opportunity is: ${topRecommendation}. Acting on these recommendations could meaningfully reduce your AI infrastructure costs.`
+    : `Your audit identified $${audit.total_monthly_savings.toFixed(0)}/month ($${audit.total_annual_savings.toFixed(0)}/year) in potential savings. The biggest opportunity is: ${topRecommendation}.`
 
   const displaySummary = summary ?? fallbackSummary
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-
-      {/* Nav */}
       <nav className="bg-white border-b border-slate-100 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <TrendingDown className="h-5 w-5 text-emerald-600" />
             <span className="font-semibold text-slate-900 tracking-tight">SpendSmart AI</span>
           </Link>
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            size="sm"
-            className="border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-300"
-          >
+          <Button onClick={handleShare} variant="outline" size="sm" className="border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-300">
             <Share2 className="h-4 w-4 mr-2" />
             {copied ? 'Link copied!' : 'Share report'}
           </Button>
@@ -106,38 +119,25 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
-
-        {/* Hero savings card */}
         <Card className={`border-0 shadow-sm rounded-2xl overflow-hidden ${isOptimal ? 'bg-emerald-50' : 'bg-white'}`}>
           <CardContent className="p-8">
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  {isOptimal
-                    ? <CheckCircle className="h-5 w-5 text-emerald-600" />
-                    : <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  }
+                  {isOptimal ? <CheckCircle className="h-5 w-5 text-emerald-600" /> : <AlertTriangle className="h-5 w-5 text-amber-500" />}
                   <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
                     {isOptimal ? 'Already optimized' : 'Savings identified'}
                   </span>
                 </div>
                 {isOptimal ? (
-                  <h1 className="text-3xl md:text-4xl font-bold text-emerald-700">
-                    You are spending well
-                  </h1>
+                  <h1 className="text-3xl md:text-4xl font-bold text-emerald-700">You are spending well</h1>
                 ) : (
                   <>
                     <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-                      Save{' '}
-                      <span className="text-emerald-600">
-                        ${audit.total_monthly_savings.toFixed(0)}/mo
-                      </span>
+                      Save <span className="text-emerald-600">${audit.total_monthly_savings.toFixed(0)}/mo</span>
                     </h1>
                     <p className="text-slate-500 mt-1 text-lg">
-                      That is{' '}
-                      <span className="font-semibold text-slate-700">
-                        ${audit.total_annual_savings.toFixed(0)} saved per year
-                      </span>
+                      That is <span className="font-semibold text-slate-700">${audit.total_annual_savings.toFixed(0)} saved per year</span>
                     </p>
                   </>
                 )}
@@ -151,15 +151,12 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
           </CardContent>
         </Card>
 
-        {/* AI Summary */}
         <Card className="border border-slate-100 shadow-sm rounded-2xl bg-white">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-emerald-600" />
               <span className="text-sm font-semibold text-slate-700">AI-generated summary</span>
-              <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700 bg-emerald-50">
-                Powered by Claude
-              </Badge>
+              <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700 bg-emerald-50">Powered by Claude</Badge>
             </div>
             {summaryLoading ? (
               <div className="space-y-2">
@@ -173,28 +170,17 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
           </CardContent>
         </Card>
 
-        {/* Per-tool breakdown */}
         <div>
           <h2 className="text-lg font-semibold text-slate-800 mb-3">Tool-by-tool breakdown</h2>
           <div className="space-y-3">
             {audit.results?.map((result, i) => (
-              <Card
-                key={i}
-                className={`border shadow-sm rounded-xl bg-white ${!result.isOptimal ? 'border-amber-100' : 'border-slate-100'
-                  }`}
-              >
+              <Card key={i} className={`border shadow-sm rounded-xl bg-white ${!result.isOptimal ? 'border-amber-100' : 'border-slate-100'}`}>
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-slate-800">{result.toolName}</span>
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${result.isOptimal
-                            ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                            : 'border-amber-200 text-amber-700 bg-amber-50'
-                            }`}
-                        >
+                        <Badge variant="outline" className={`text-xs ${result.isOptimal ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-amber-200 text-amber-700 bg-amber-50'}`}>
                           {result.currentPlan}
                         </Badge>
                       </div>
@@ -209,13 +195,10 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
                     <div className="text-right flex-shrink-0">
                       <div className="text-sm text-slate-400">Currently paying</div>
                       <div className="text-xl font-bold text-slate-800">
-                        ${result.currentMonthlySpend.toFixed(0)}
-                        <span className="text-sm font-normal text-slate-400">/mo</span>
+                        ${result.currentMonthlySpend.toFixed(0)}<span className="text-sm font-normal text-slate-400">/mo</span>
                       </div>
                       {result.monthlySavings > 0 && (
-                        <div className="text-sm font-semibold text-emerald-600 mt-0.5">
-                          Save ${result.monthlySavings.toFixed(0)}/mo
-                        </div>
+                        <div className="text-sm font-semibold text-emerald-600 mt-0.5">Save ${result.monthlySavings.toFixed(0)}/mo</div>
                       )}
                     </div>
                   </div>
@@ -225,29 +208,18 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
           </div>
         </div>
 
-        {/* Credex CTA — only for high savings */}
         {isHighSavings && (
           <Card className="border-0 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl shadow-sm">
             <CardContent className="p-7 text-white">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                  <Badge className="bg-white/20 text-white border-0 mb-3 text-xs">
-                    You qualify for Credex savings
-                  </Badge>
-                  <h3 className="text-xl font-bold mb-1">
-                    Get an extra 20-40% off your AI tools
-                  </h3>
+                  <Badge className="bg-white/20 text-white border-0 mb-3 text-xs">You qualify for Credex savings</Badge>
+                  <h3 className="text-xl font-bold mb-1">Get an extra 20-40% off your AI tools</h3>
                   <p className="text-emerald-100 text-sm max-w-md">
-                    Credex sources discounted AI credits from companies that overforecast.
-                    Your audit shows significant overspend — a Credex consultation could save you even more.
+                    Credex sources discounted AI credits from companies that overforecast. A Credex consultation could save you even more.
                   </p>
                 </div>
-                <a
-                  href="https://credex.rocks"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 bg-white text-emerald-700 font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-emerald-50 transition-colors"
-                >
+                <a href="https://credex.rocks" target="_blank" rel="noopener noreferrer" className="flex-shrink-0 bg-white text-emerald-700 font-semibold px-5 py-2.5 rounded-lg text-sm hover:bg-emerald-50 transition-colors">
                   Book free consultation
                 </a>
               </div>
@@ -255,43 +227,81 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
           </Card>
         )}
 
-        {/* Already optimal CTA */}
-        {isOptimal && (
-          <Card className="border border-slate-100 rounded-2xl shadow-sm bg-white">
-            <CardContent className="p-6 text-center">
-              <CheckCircle className="h-8 w-8 text-emerald-500 mx-auto mb-3" />
-              <h3 className="font-semibold text-slate-800 mb-1">You are spending well</h3>
+        {/* Email capture card — always visible unless submitted */}
+        {!emailSubmitted && (
+          <Card className="border border-emerald-100 rounded-2xl shadow-sm bg-gradient-to-br from-white to-emerald-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Mail className="h-4 w-4 text-emerald-600" />
+                <span className="font-semibold text-slate-800">
+                  {isOptimal ? 'Notify me when new savings apply' : 'Get your full report by email'}
+                </span>
+              </div>
               <p className="text-slate-500 text-sm mb-4">
-                Want to be notified when new optimizations apply to your stack?
+                {isOptimal
+                  ? 'We will let you know when new optimizations apply to your stack.'
+                  : 'We will send you the complete audit and notify you when new savings apply.'}
+                {audit.total_monthly_savings > 500 && (
+                  <span className="text-emerald-700 font-medium"> High-savings audits get a personal Credex follow-up.</span>
+                )}
               </p>
-              <Button
-                variant="outline"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                onClick={() => setShowEmailCapture(true)}
-              >
-                Notify me of new savings
-              </Button>
+
+              {!showEmailCapture ? (
+                <Button onClick={() => setShowEmailCapture(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Mail className="h-4 w-4 mr-2" />
+                  {isOptimal ? 'Notify me' : 'Send me the report'}
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <input type="text" name="website" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-slate-700 text-sm">Email address *</Label>
+                      <Input type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} className="border-slate-200" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-slate-700 text-sm">Company name</Label>
+                      <Input placeholder="Acme Inc. (optional)" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="border-slate-200" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-slate-700 text-sm">Your role (optional)</Label>
+                    <Input placeholder="e.g. CTO, Engineering Manager" value={role} onChange={(e) => setRole(e.target.value)} className="border-slate-200" />
+                  </div>
+                  <Button onClick={handleEmailSubmit} disabled={!email || emailLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full">
+                    {emailLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Sending...
+                      </span>
+                    ) : 'Send my report'}
+                  </Button>
+                  <p className="text-xs text-slate-400 text-center">No spam. Unsubscribe anytime.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {/* Share + run again */}
+        {emailSubmitted && (
+          <Card className="border border-emerald-200 rounded-2xl bg-emerald-50">
+            <CardContent className="p-6 text-center">
+              <CheckCircle className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+              <p className="font-semibold text-emerald-800">Report sent to your inbox!</p>
+              <p className="text-emerald-600 text-sm mt-1">Check your email for the full audit.</p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="flex gap-3 flex-wrap pb-10">
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="flex-1 border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
-          >
+          <Button onClick={handleShare} variant="outline" className="flex-1 border-slate-200 text-slate-600 hover:border-emerald-300 hover:text-emerald-700">
             <Share2 className="h-4 w-4 mr-2" />
             {copied ? 'Link copied!' : 'Share this report'}
           </Button>
           <Link href="/" className="flex-1">
-            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-              Run another audit
-            </Button>
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">Run another audit</Button>
           </Link>
         </div>
-
       </div>
     </main>
   )

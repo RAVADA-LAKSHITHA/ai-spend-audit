@@ -29,7 +29,7 @@ function loadFromStorage<T>(key: string, field: string, fallback: T): T {
       const parsed = JSON.parse(saved)
       if (parsed[field] !== undefined && parsed[field] !== null) return parsed[field] as T
     }
-  } catch {}
+  } catch { }
   return fallback
 }
 
@@ -83,8 +83,8 @@ export default function Home() {
   }
 
   async function handleSubmit() {
-    if (!teamSize) {
-      alert('Please fill in your team size at the top.')
+    if (!teamSize || parseInt(teamSize) < 1) {
+      alert('Please enter a valid team size of at least 1.')
       return
     }
     if (entries.some((e) => !e.planName)) {
