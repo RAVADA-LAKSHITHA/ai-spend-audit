@@ -55,7 +55,7 @@ export const TOOLS: Tool[] = [
     plans: [
       { name: 'Plus', pricePerSeat: 20, bestFor: 'Individual users' },
       { name: 'Team', pricePerSeat: 30, minSeats: 2, bestFor: 'Small teams' },
-      { name: 'Enterprise', pricePerSeat: 0, bestFor: 'Custom pricing' },
+      { name: 'Enterprise', pricePerSeat: 60, bestFor: 'Large orgs, custom pricing' },
     ],
   },
   {

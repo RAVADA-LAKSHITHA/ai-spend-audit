@@ -34,6 +34,12 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
   const [summary, setSummary] = useState<string | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [showEmailCapture, setShowEmailCapture] = useState(false)  // ADD THIS
+  const [email, setEmail] = useState('')
+  const [companyName, setCompanyName] = useState('')
+  const [role, setRole] = useState('')
+  const [emailSubmitted, setEmailSubmitted] = useState(false)
+  const [emailLoading, setEmailLoading] = useState(false)
 
   const isHighSavings = audit.total_monthly_savings > 500
   const isOptimal = audit.total_monthly_savings === 0
@@ -174,9 +180,8 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
             {audit.results?.map((result, i) => (
               <Card
                 key={i}
-                className={`border shadow-sm rounded-xl bg-white ${
-                  !result.isOptimal ? 'border-amber-100' : 'border-slate-100'
-                }`}
+                className={`border shadow-sm rounded-xl bg-white ${!result.isOptimal ? 'border-amber-100' : 'border-slate-100'
+                  }`}
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -185,11 +190,10 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
                         <span className="font-semibold text-slate-800">{result.toolName}</span>
                         <Badge
                           variant="outline"
-                          className={`text-xs ${
-                            result.isOptimal
-                              ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                              : 'border-amber-200 text-amber-700 bg-amber-50'
-                          }`}
+                          className={`text-xs ${result.isOptimal
+                            ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                            : 'border-amber-200 text-amber-700 bg-amber-50'
+                            }`}
                         >
                           {result.currentPlan}
                         </Badge>
@@ -260,7 +264,11 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
               <p className="text-slate-500 text-sm mb-4">
                 Want to be notified when new optimizations apply to your stack?
               </p>
-              <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <Button
+                variant="outline"
+                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                onClick={() => setShowEmailCapture(true)}
+              >
                 Notify me of new savings
               </Button>
             </CardContent>
