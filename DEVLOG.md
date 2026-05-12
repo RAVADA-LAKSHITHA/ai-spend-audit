@@ -139,3 +139,32 @@
 - Commit days: ✅ 5 distinct days
 - All required files: ✅ Present at repo root
 - User interviews: ✅ 3 completed (Sai Deepak, Harsith Veera Charan, Omkar Palika)
+
+
+## Day 6 — 2026-05-12
+
+**Hours worked:** 5
+
+**What I did:**
+- Complete UI redesign — moved from a simple form layout to a professional table-style card with proper visual hierarchy
+- Added green cost pills that auto-calculate, amber highlighted fields for API tools requiring manual spend entry
+- Added stats row (9 tools · 2 min · 100% free) and Step 1 of 1 badge for product feel
+- Added inline validation error display inside the card instead of browser alerts
+- Fixed Enterprise/Pay-as-you-go $0 validation — users must enter actual spend for custom-priced plans
+- Added aria-labels to all buttons and select elements for accessibility
+- Removed auto-generated AGENTS.md and CLAUDE.md files from repo root
+- Ran Lighthouse on live URL: Performance 99, Accessibility 84, Best Practices 96, SEO 100
+- Verified 6 distinct commit days in git history ✅
+
+**What I learned:**
+- Hydration errors caused by browser extensions (password managers add fdprocessedid attributes) look scary but are not real bugs — they don't affect real users
+- UI redesign is faster when you have a clear reference — the preview widget helped me understand what professional looks like vs what I had
+
+**Blockers / what I'm stuck on:**
+- Accessibility score is 84, need 90+ — select elements and buttons need aria-labels (in progress)
+
+**Plan for tomorrow:**
+- Submit the assignment via Google Form
+- Final git log check — confirm 5+ distinct days
+- Verify live URL still working
+- Verify CI green on latest commit
