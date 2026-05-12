@@ -48,7 +48,7 @@ export default function AuditResultsClient({ audit }: { audit: Audit }) {
   const topRecommendation =
     audit.results?.find((r) => !r.isOptimal)?.recommendedAction ?? 'Review your current plans'
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     async function fetchSummary() {
       try {
