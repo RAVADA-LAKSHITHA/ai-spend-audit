@@ -170,3 +170,23 @@
 - Verify CI green on latest commit
 
 
+## Day 7 — 2026-05-13
+
+**Hours worked:** 2
+
+**What I did:**
+- Final submission day — verified all required files present at repo root
+- Ran Lighthouse on deployed URL: Performance 99, Best Practices 96, SEO 100
+- Verified CI green on latest commit
+- Verified 6 distinct commit days in git history
+- Submitted Google Form with GitHub repo URL and live deployed URL
+
+**What I learned:**
+- Lighthouse scores are affected by browser extensions — always run in incognito for accurate results
+- Writing DEVLOG entries daily genuinely helped me track progress and make better decisions
+
+**Blockers / what I'm stuck on:**
+- None — submission complete
+
+**Plan for tomorrow:**
+- Wait for Credex response within 3 working days of deadline
