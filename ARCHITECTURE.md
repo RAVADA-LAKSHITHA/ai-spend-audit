@@ -32,7 +32,7 @@ graph TD
 - **Next.js 14 (App Router)**: Server components + API routes in one framework. Vercel deployment is seamless.
 - **TypeScript**: The audit engine has complex types. TypeScript catches bugs at compile time.
 - **Tailwind + shadcn/ui**: Fast, accessible UI components. Not a pre-built template — all layout is custom.
-- **Supabase**: Postgres with a generous free tier. Built-in RLS for security.
+- **Supabase**: Postgres with a generous free tier. Row Level Security (RLS) enabled on both tables — anonymous users can insert audits/leads and read public audits only. No unauthorized data access possible.
 - **Resend**: Simplest transactional email API. Free tier is sufficient.
 
 ## Scaling to 10k audits/day
